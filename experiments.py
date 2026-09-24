@@ -64,13 +64,22 @@ train = df[df.date.dt.month <= 9].copy()
 valid = df[df.date.dt.month == 10].copy()
 print(f"train={len(train)}  valid={len(valid)}")
 
-run("baseline (all features, log target)", FEATURES)
-run("raw target", FEATURES, log_target=False)
-run("no route categorical", [f for f in FEATURES if f != "route"])
-run("no lat/lon", [f for f in FEATURES if not f.endswith(("_lat", "_lon"))])
-run("no dow", [f for f in FEATURES if f != "dow"])
-run("l1 objective", FEATURES, extra_params=dict(objective="l1"))
-run("tweedie", FEATURES, log_target=False, extra_params=dict(objective="tweedie", tweedie_variance_power=1.2))
+# The baseline here IS the shipped config (see src/train.py); variants show
+# why each alternative was rejected.
+run("shipped: l1, log target, no route/month", FEATURES, extra_params=dict(
+    objective="l1", num_leaves=511, min_data_in_leaf=30))
+run("with route categorical", FEATURES + ["route"], extra_params=dict(
+    objective="l1", num_leaves=511, min_data_in_leaf=30))
+run("l2 instead of l1", FEATURES, extra_params=dict(
+    num_leaves=511, min_data_in_leaf=30))
+run("raw target (no log)", FEATURES, log_target=False, extra_params=dict(
+    objective="l1", num_leaves=511, min_data_in_leaf=30))
+run("no lat/lon", [f for f in FEATURES if not f.endswith(("_lat", "_lon"))],
+    extra_params=dict(objective="l1", num_leaves=511, min_data_in_leaf=30))
+run("no dow", [f for f in FEATURES if f != "dow"],
+    extra_params=dict(objective="l1", num_leaves=511, min_data_in_leaf=30))
+run("tweedie", FEATURES, log_target=False,
+    extra_params=dict(objective="tweedie", tweedie_variance_power=1.2))
 
 # month feature: helps on Oct holdout? (Nov/Dec are unseen at final-train time,
 # so this is a leakage-risk probe only)

@@ -59,5 +59,4 @@ report_assets/              metrics.json + figures
 scorer_results/             candidate_december.png
 validation_predictions.csv  final submission file (load_id,predicted_rate)
 report.pdf                  assessment report
-LOOM_SCRIPT.md              talking points for the walkthrough video
 ```
