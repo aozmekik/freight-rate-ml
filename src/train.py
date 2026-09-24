@@ -33,7 +33,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+import plotstyle
 from features import CATEGORICAL_FEATURES, FEATURES, TARGET, build_features, clean_training
+from plotstyle import ACCENT, GRAY
+
+plotstyle.apply()
 
 DATA = Path("data/train_test.csv")
 MODEL_DIR = Path("model")
@@ -101,20 +105,26 @@ def main() -> None:
         {"split": "train=2025-01..2025-09, holdout=2025-10",
          "best_iteration": best_iter, "holdout_metrics": scores}, indent=2))
 
-    imp = pd.Series(model.feature_importance("gain"), index=FEATURES).sort_values()
-    fig, ax = plt.subplots(figsize=(8, 4.2), dpi=150)
-    imp.plot.barh(ax=ax, color="#064A56")
-    ax.set_title("Feature importance (gain)")
+    imp = pd.Series(model.feature_importance("gain"), index=FEATURES)
+    imp = imp.sort_values(ascending=False)
+    imp_rel = (imp / imp.sum() * 100).sort_values()
+    fig, ax = plt.subplots(figsize=(3.25, 2.75))
+    imp_rel.plot.barh(ax=ax, color=ACCENT, width=0.72)
+    ax.set(xlabel="Share of total split gain",
+           title="Feature importance (relative gain)")
+    ax.xaxis.set_major_formatter(lambda v, _: f"{v:.0f}%")
     fig.tight_layout()
     fig.savefig(ASSETS / "feature_importance.png")
     plt.close(fig)
 
-    fig, ax = plt.subplots(figsize=(5.5, 5), dpi=150)
-    ax.scatter(valid_df[TARGET], pred, s=3, alpha=0.25, color="#064A56")
+    fig, ax = plt.subplots(figsize=(3.25, 2.75))
+    ax.scatter(valid_df[TARGET], pred, s=2.5, alpha=0.2, color=ACCENT,
+               linewidths=0, rasterized=True)
     lim = (0, float(max(valid_df[TARGET].quantile(0.999), np.quantile(pred, 0.999))))
-    ax.plot(lim, lim, color="#C0392B", linewidth=1)
-    ax.set(xlabel="Actual rate ($)", ylabel="Predicted rate ($)",
-           title="October holdout: predicted vs actual", xlim=lim, ylim=lim)
+    ax.plot(lim, lim, color=GRAY, linewidth=1, linestyle=(0, (4, 2)))
+    ax.set(xlabel="Actual rate (USD)", ylabel="Predicted rate (USD)",
+           title="October holdout: predicted vs.\ actual", xlim=lim, ylim=lim)
+    ax.set_aspect("equal")
     fig.tight_layout()
     fig.savefig(ASSETS / "predicted_vs_actual.png")
     plt.close(fig)

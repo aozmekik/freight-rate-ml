@@ -36,9 +36,9 @@ python -m pip install -r requirements.txt
 python src/train.py       # holdout metrics, figures, final models in model/
 python src/predict.py     # validation_predictions.csv + fills data/december_chart_inputs.csv
 python src/make_figures.py
-python src/make_report.py # report.pdf
 python score.py --predictions validation_predictions.csv \
     --december-predictions data/december_chart_inputs.csv
+pdflatex report.tex       # optional: rebuilds report.pdf (needs a LaTeX install)
 ```
 
 The scorer validates both files and creates
@@ -49,11 +49,12 @@ The scorer validates both files and creates
 ```
 data/                       input CSVs (train/validation/templates)
 src/features.py             shared feature engineering (train/serve identical)
+src/plotstyle.py            shared figure style (single accent color)
 src/train.py                time-split validation + final model training
 src/predict.py              validation + December predictions
 src/make_figures.py         EDA figures for the report
-src/make_report.py          builds report.pdf
 experiments.py              one-off model-config comparison (exploratory)
+report.tex                  LaTeX source of the assessment report
 model/                      trained LightGBM boosters + meta.json
 report_assets/              metrics.json + figures
 scorer_results/             candidate_december.png
