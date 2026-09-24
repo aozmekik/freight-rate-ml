@@ -42,6 +42,11 @@ def run(name, features, log_target=True, extra_params=None, train_df=None, valid
     if extra_params:
         params.update(extra_params)
     cats = [c for c in CATEGORICAL_FEATURES if c in features]
+    for extra in ("route", "month"):  # variant-only categoricals
+        if extra in features:
+            train_df = train_df.assign(**{extra: train_df[extra].astype("category")})
+            valid_df = valid_df.assign(**{extra: valid_df[extra].astype("category")})
+            cats.append(extra)
     ytr = np.log(train_df[TARGET]) if log_target else train_df[TARGET]
     dtrain = lgb.Dataset(train_df[features], ytr, categorical_feature=cats)
     dvalid = lgb.Dataset(valid_df[features], np.log(valid_df[TARGET]) if log_target else valid_df[TARGET])
